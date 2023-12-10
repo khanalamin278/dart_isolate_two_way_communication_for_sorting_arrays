@@ -32,12 +32,11 @@ class SendingTextCommandsAndReceivedProcessedIsolate {
     final completer = Completer();
 
     isolateForTextProcessor ??=
-      await Isolate.spawn(_textProcessPort, _receivedFromProcessed.sendPort);
+        await Isolate.spawn(_textProcessPort, _receivedFromProcessed.sendPort);
 
     StreamSubscription? subscription;
     (sendPortInitialized)
-        ? sendingToTextProcessor?.send(
-            commandsAndInput) 
+        ? sendingToTextProcessor?.send(commandsAndInput)
         : print('Send Port to text processor has not been initialized yet!');
 
     subscription = _broadcastStream.listen((message) async {
@@ -78,11 +77,11 @@ Future<void> _textProcessPort(SendPort sendBackToMainPort) async {
   }
 }
 
-processingFunction(List<int> commandsAndInput) async {
-  ReceivePort receivePort = ReceivePort();
+// processingFunction(List<int> commandsAndInput) async {
+//   ReceivePort receivePort = ReceivePort();
 
-  return await receivePort.toList();
-}
+//   return await receivePort.toList();
+// }
 
 setupSortingIsolate() async {
   return SendingTextCommandsAndReceivedProcessedIsolate();
