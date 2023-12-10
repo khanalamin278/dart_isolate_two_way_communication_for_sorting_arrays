@@ -26,29 +26,18 @@ class SendingTextCommandsAndReceivedProcessedIsolate {
 
   SendingTextCommandsAndReceivedProcessedIsolate() {
     _broadcastStream = _receivedFromProcessed.asBroadcastStream();
-    //allows for _receivedFromProcessed to be listened to multiple times
-    //don't worry, there is a below line "subscription?.cancel();" which closes a listener once it is done with the stream
-    //so listeners don't needlessly accumulate
   }
 
   Future<dynamic> sendAndReceive(List<int> commandsAndInput) async {
     final completer = Completer();
 
-    // if (isolateForTextProcessor != null) {
-    //   isolateForTextProcessor?.kill();
-    //   isolateForTextProcessor = null;
-    // }
-    // isolateForTextProcessor =
-    //     await Isolate.spawn(_textProcessPort, _receivedFromProcessed.sendPort);
-    //the above will work but is not advised, better to reuse isolates rather than kill/remake them
-
     isolateForTextProcessor ??=
-        await Isolate.spawn(_textProcessPort, _receivedFromProcessed.sendPort);
+      await Isolate.spawn(_textProcessPort, _receivedFromProcessed.sendPort);
 
     StreamSubscription? subscription;
     (sendPortInitialized)
         ? sendingToTextProcessor?.send(
-            commandsAndInput) //triggers the text processor isolate by sending it a map. without this, it will not send anything back!
+            commandsAndInput) 
         : print('Send Port to text processor has not been initialized yet!');
 
     subscription = _broadcastStream.listen((message) async {
@@ -76,8 +65,7 @@ class SendingTextCommandsAndReceivedProcessedIsolate {
 
 Future<void> _textProcessPort(SendPort sendBackToMainPort) async {
   final receiveFromMainPort = ReceivePort();
-  sendBackToMainPort.send(receiveFromMainPort
-      .sendPort); //sending the recieve port to the main isolate so it can communicate back with us
+  sendBackToMainPort.send(receiveFromMainPort.sendPort);
 
   await for (var message in receiveFromMainPort) {
     if (message is List<int>) {
@@ -99,33 +87,3 @@ processingFunction(List<int> commandsAndInput) async {
 setupSortingIsolate() async {
   return SendingTextCommandsAndReceivedProcessedIsolate();
 }
-
-/*
-extension SortingIsolate on Isolate {
-  Future<List<int>> sendAndReceive(List<int> array) async {
-    ReceivePort receivePort = ReceivePort();
-    this.send(receivePort.sendPort);
-
-    SendPort isolateSendPort = await receivePort.first;
-    isolateSendPort.send(array);
-
-    return await receivePort.first;
-  }
-
-  Future<void> shutdown() {
-    final completer = Completer<void>();
-    this.send('shutdown');
-    this.addOnExitListener(receivePort.sendPort, response: completer.complete);
-    return completer.future;
-  }
-}
-
-Future<Isolate> setupSortingIsolate() async {
-  ReceivePort receivePort = ReceivePort();
-  Isolate isolate = await Isolate.spawn(sortArrayInIsolate, receivePort.sendPort);
-  SendPort sendPort = await receivePort.first;
-
-  return isolate;
-}
-
- */
