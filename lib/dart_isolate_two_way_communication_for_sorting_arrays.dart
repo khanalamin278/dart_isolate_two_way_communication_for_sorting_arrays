@@ -77,12 +77,6 @@ Future<void> _textProcessPort(SendPort sendBackToMainPort) async {
   }
 }
 
-// processingFunction(List<int> commandsAndInput) async {
-//   ReceivePort receivePort = ReceivePort();
-
-//   return await receivePort.toList();
-// }
-
 setupSortingIsolate() async {
   return SendingTextCommandsAndReceivedProcessedIsolate();
 }
